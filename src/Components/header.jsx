@@ -16,8 +16,9 @@ const styles = {
     marginBottom: "20px",
     textAlign: "center",
     width: "100%",
-    maxWidth: "900px",   // Home'daki box ile aynı genişlik
-    margin: "0 auto",     // ORTALAR
+    maxWidth: "1000px",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
   title: {
     margin: 0,

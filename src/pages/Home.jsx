@@ -7,6 +7,10 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
 
+import Swal from 'sweetalert2';
+
+
+
 function Home() {
   const [tasks, setTasks] = useState([]);
   const [newTaskText, setNewTaskText] = useState("");
@@ -92,14 +96,36 @@ function Home() {
       .catch((err) => console.error("Kaydetme hatası:", err));
   };
 
-  const handleDeleteTask = (id) => {
-    fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
-      method: "DELETE",
+
+
+const handleDeleteTask = (id) => {
+  fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Silme başarısız.");
+      return res.json();
     })
-      .then((res) => res.json())
-      .then((data) => setTasks(data))
-      .catch((err) => console.error("Silme hatası:", err));
-  };
+    .then((data) => {
+      setTasks(data);
+      Swal.fire({
+        icon: 'success',
+        title: 'Silindi!',
+        text: 'Görev başarıyla silindi.',
+        confirmButtonColor: '#3085d6',
+      });
+    })
+    .catch((err) => {
+      console.error("Silme hatası:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: 'Görev silinemedi.',
+        confirmButtonColor: '#d33',
+      });
+    });
+};
+
 
   const filteredTasks = tasks.filter((t) =>
     t.text.toLowerCase().includes(filterText.toLowerCase())
@@ -243,15 +269,19 @@ function Home() {
 
 const styles = {
   container: {
-    maxWidth: "900px",
-    margin: "30px auto",
+  
+    margin: "5px auto",
     backgroundColor: "#f2f5f7",
-    padding: "20px",
+   paddingTop: "60px",
+paddingBottom: "150px",
+paddingLeft: "300px",
+paddingRight: "320px",
+
     borderRadius: "12px",
     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
   },
   box: {
-    padding: "20px",
+    padding: "100px",
     backgroundColor: "white",
     borderRadius: "12px",
   },

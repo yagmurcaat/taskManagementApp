@@ -6,6 +6,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2';
 
 function TamamlananGorevler() {
   const [tasks, setTasks] = useState([]);
@@ -63,15 +64,34 @@ function TamamlananGorevler() {
       })
       .catch((err) => console.error("Kaydetme hatası:", err));
   };
-
-  const handleDeleteTask = (id) => {
-    fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
-      method: "DELETE",
+const handleDeleteTask = (id) => {
+  fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Silme başarısız.");
+      return res.json();
     })
-      .then((res) => res.json())
-      .then((data) => setTasks(data))
-      .catch((err) => console.error("Silme hatası:", err));
-  };
+    .then((data) => {
+      setTasks(data);
+      Swal.fire({
+        icon: 'success',
+        title: 'Silindi!',
+        text: 'Görev başarıyla silindi.',
+        confirmButtonColor: '#3085d6',
+      });
+    })
+    .catch((err) => {
+      console.error("Silme hatası:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: 'Görev silinemedi.',
+        confirmButtonColor: '#d33',
+      });
+    });
+};
+
 
   const completedTasks = tasks.filter((t) => t.completed);
   const filteredTasks = completedTasks.filter((t) =>
@@ -206,11 +226,21 @@ const styles = {
     padding: "20px",
   },
   container: {
+  
+    margin: "5px auto",
     backgroundColor: "#f2f5f7",
+   paddingTop: "60px",
+paddingBottom: "150px",
+paddingLeft: "300px",
+paddingRight: "320px",
+
     borderRadius: "12px",
     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-    width: "900px",
-    padding: "20px",
+  },
+  box: {
+    padding: "100px",
+    backgroundColor: "white",
+    borderRadius: "12px",
   },
   countCard: {
     backgroundColor: "#81c784", // Daha açık yeşil
@@ -218,7 +248,7 @@ const styles = {
     borderRadius: "12px",
     padding: "15px 25px",
     textAlign: "center",
-    width: "180px", // Daha küçük genişlik
+     // Daha küçük genişlik
     fontWeight: "bold",
     fontSize: "18px",
     userSelect: "none",

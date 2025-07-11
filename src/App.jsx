@@ -1,13 +1,12 @@
 import React from "react";
- import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
- import Home from "./pages/Home";
- import TamamlananGorevler from "./pages/TamamlananGorevler";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import Home from "./pages/Home";
+import TamamlananGorevler from "./pages/TamamlananGorevler";
 import PersonelIzin from "./pages/personelizin";
 import { CssBaseline } from "@mui/material";
 
 function App() {
   return (
-   
     <Router>
       <CssBaseline />
       <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -76,11 +75,12 @@ function App() {
         </aside>
 
         {/* Sayfa İçeriği */}
-        <main style={{ flex: 1, padding: "20px" }}>
+        <main style={{ flex: 1, padding: "40px 40px 40px 60px" }}>
+          {/* padding sol ve sağ biraz artırıldı */}
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/tamamlananlar" element={<TamamlananGorevler />} />
-            <Route path="/personelizin" element={<PersonelIzin />} /> 
+            <Route path="/personelizin" element={<PersonelIzin />} />
           </Routes>
         </main>
       </div>

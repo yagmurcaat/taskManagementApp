@@ -2,63 +2,91 @@ import React, { useState, useEffect } from "react";
 import Header from "../Components/header";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+import Swal from 'sweetalert2';
+
 
 function PersonelIzin() {
   const [izinler, setIzinler] = useState([]);
   const [isim, setIsim] = useState("");
-  const [tarih, setTarih] = useState("");
+  const [baslangicTarihi, setBaslangicTarihi] = useState("");
+  const [bitisTarihi, setBitisTarihi] = useState("");
 
   useEffect(() => {
-    fetch("https://localhost:44314/api/izinler")
+    fetch("https://localhost:44314/api/personelizin/listleave")
       .then((res) => res.json())
       .then((data) => setIzinler(data))
       .catch((err) => console.error(err));
   }, []);
 
   const handleAddIzin = () => {
-    if (isim.trim() === "" || tarih === "") return;
+    if (isim.trim() === "" || baslangicTarihi === "" || bitisTarihi === "") return;
+
+    // Tarih kontrolü eklendi:
+    const baslangic = new Date(baslangicTarihi);
+    const bitis = new Date(bitisTarihi);
+    if (bitis <= baslangic) {
+      alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
+      return;
+    }
 
     const yeniIzin = {
-      id: "00000000-0000-0000-0000-000000000000",
       isim,
-      tarih,
+      baslangicTarihi,
+      bitisTarihi,
     };
 
-    fetch("https://localhost:44314/api/izinler", {
+    fetch("https://localhost:44314/api/personelizin/Addleave", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(yeniIzin),
     })
+      .then((res) => {
+        if (!res.ok) throw new Error("Ekleme başarısız.");
+        return fetch("https://localhost:44314/api/personelizin/listleave");
+      })
       .then((res) => res.json())
       .then((data) => {
         setIzinler(data);
         setIsim("");
-        setTarih("");
+        setBaslangicTarihi("");
+        setBitisTarihi("");
       })
       .catch((err) => console.error(err));
   };
 
-  const handleDeleteIzin = (id) => {
-    fetch(`https://localhost:44314/api/izinler/${id}`, {
-      method: "DELETE",
+const handleDeleteIzin = (id) => {
+  fetch(`https://localhost:44314/api/personelizin/DeleteLeave/${id}`, {
+    method: "DELETE",
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Silme başarısız.");
+      return fetch("https://localhost:44314/api/personelizin/listleave");
     })
-      .then((res) => res.json())
-      .then((data) => setIzinler(data))
-      .catch((err) => console.error(err));
-  };
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "";
-    const date = new Date(dateString);
-    return `${String(date.getDate()).padStart(2, "0")}.${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}.${date.getFullYear()}`;
-  };
+    .then((res) => res.json())
+    .then((data) => {
+      setIzinler(data);
+      Swal.fire({
+        icon: 'success',
+        title: 'Silindi!',
+        text: 'Personel izni başarıyla silindi.',
+        confirmButtonColor: '#3085d6',
+      });
+    })
+    .catch((err) => {
+      console.error(err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: 'Silme işlemi başarısız oldu.',
+        confirmButtonColor: '#d33',
+      });
+    });
+};
 
   return (
     <>
-       <Header title="Personel İzin" />
       <div style={styles.container}>
+        <Header title="Personel İzin" />
         <div style={styles.box}>
           <h2 style={styles.title}>Personel İzin</h2>
           <div style={styles.inputGroup}>
@@ -71,8 +99,14 @@ function PersonelIzin() {
             />
             <input
               type="date"
-              value={tarih}
-              onChange={(e) => setTarih(e.target.value)}
+              value={baslangicTarihi}
+              onChange={(e) => setBaslangicTarihi(e.target.value)}
+              style={styles.input}
+            />
+            <input
+              type="date"
+              value={bitisTarihi}
+              onChange={(e) => setBitisTarihi(e.target.value)}
               style={styles.input}
             />
             <button onClick={handleAddIzin} style={styles.button}>
@@ -85,8 +119,8 @@ function PersonelIzin() {
             <thead>
               <tr>
                 <th style={styles.th}>İsim Soyisim</th>
-                <th style={styles.th}>Tarih</th>
-                <th style={styles.th}>İşlem</th>
+                <th style={styles.th}>Tarih Aralığı</th>
+                <th style={styles.th}></th>
               </tr>
             </thead>
             <tbody>
@@ -100,7 +134,10 @@ function PersonelIzin() {
                 izinler.map((i) => (
                   <tr key={i.id}>
                     <td style={styles.td}>{i.isim}</td>
-                    <td style={styles.td}>{formatDate(i.tarih)}</td>
+                    <td style={styles.td}>
+                      {new Date(i.baslangicTarihi).toLocaleDateString()} -{" "}
+                      {new Date(i.bitisTarihi).toLocaleDateString()}
+                    </td>
                     <td style={styles.td}>
                       <IconButton
                         onClick={() => handleDeleteIzin(i.id)}
@@ -124,16 +161,18 @@ function PersonelIzin() {
 
 const styles = {
   container: {
+    margin: "5px auto",
     backgroundColor: "#f2f5f7",
-    minHeight: "100vh",
-    paddingTop: "40px",
+    paddingBottom: "150px",
+    paddingLeft: "250px",
+    paddingRight: "320px",
+    borderRadius: "12px",
+    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
   },
   box: {
-    backgroundColor: "#fff",
-    padding: "30px",
+    padding: "100px",
+    backgroundColor: "white",
     borderRadius: "12px",
-    maxWidth: "900px",
-    margin: "auto",
   },
   title: { textAlign: "center", marginBottom: "20px" },
   inputGroup: {
@@ -142,13 +181,14 @@ const styles = {
     marginBottom: "20px",
     justifyContent: "center",
     alignItems: "center",
+    flexWrap: "wrap",
   },
   input: {
     padding: "12px",
     fontSize: "18px",
     borderRadius: "6px",
     border: "1px solid #ccc",
-    width: "250px",
+    width: "220px",
     boxSizing: "border-box",
   },
   button: {
