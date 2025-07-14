@@ -4,7 +4,6 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from 'sweetalert2';
 
-
 function PersonelIzin() {
   const [izinler, setIzinler] = useState([]);
   const [isim, setIsim] = useState("");
@@ -18,57 +17,50 @@ function PersonelIzin() {
       .catch((err) => console.error(err));
   }, []);
 
-  const handleAddIzin = () => {
-    if (isim.trim() === "" || baslangicTarihi === "" || bitisTarihi === "") return;
-
-    // Tarih kontrolü eklendi:
-    const baslangic = new Date(baslangicTarihi);
-    const bitis = new Date(bitisTarihi);
-    if (bitis <= baslangic) {
-      alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
-      return;
-    }
-
-    const yeniIzin = {
-      isim,
-      baslangicTarihi,
-      bitisTarihi,
-    };
-
-    fetch("https://localhost:44314/api/personelizin/Addleave", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(yeniIzin),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Ekleme başarısız.");
-        return fetch("https://localhost:44314/api/personelizin/listleave");
-      })
-      .then((res) => res.json())
-      .then((data) => {
-        setIzinler(data);
-        setIsim("");
-        setBaslangicTarihi("");
-        setBitisTarihi("");
-      })
-      .catch((err) => console.error(err));
+  // Sadece harf ve boşluk kabul eden isim input handler
+  const handleIsimChange = (e) => {
+    const value = e.target.value;
+    const filtered = value.replace(/[^a-zA-ZığüşöçİĞÜŞÖÇ\s]/g, "");
+    setIsim(filtered);
   };
 
-const handleDeleteIzin = (id) => {
-  fetch(`https://localhost:44314/api/personelizin/DeleteLeave/${id}`, {
-    method: "DELETE",
+  const handleAddIzin = () => {
+  if (isim.trim() === "" || baslangicTarihi === "" || bitisTarihi === "") return;
+
+  const baslangic = new Date(baslangicTarihi);
+  const bitis = new Date(bitisTarihi);
+  if (bitis <= baslangic) {
+    alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
+    return;
+  }
+
+  const yeniIzin = {
+    isim,
+    baslangicTarihi,
+    bitisTarihi,
+  };
+
+  fetch("https://localhost:44314/api/personelizin/Addleave", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(yeniIzin),
   })
     .then((res) => {
-      if (!res.ok) throw new Error("Silme başarısız.");
+      if (!res.ok) throw new Error("Ekleme başarısız.");
       return fetch("https://localhost:44314/api/personelizin/listleave");
     })
     .then((res) => res.json())
     .then((data) => {
       setIzinler(data);
+      setIsim("");
+      setBaslangicTarihi("");
+      setBitisTarihi("");
+
+      // ✅ Ekleme sonrası başarılı mesajı
       Swal.fire({
         icon: 'success',
-        title: 'Silindi!',
-        text: 'Personel izni başarıyla silindi.',
+        title: 'Eklendi!',
+        text: 'Personel izni başarıyla eklendi.',
         confirmButtonColor: '#3085d6',
       });
     })
@@ -77,11 +69,41 @@ const handleDeleteIzin = (id) => {
       Swal.fire({
         icon: 'error',
         title: 'Hata!',
-        text: 'Silme işlemi başarısız oldu.',
+        text: 'Ekleme işlemi başarısız oldu.',
         confirmButtonColor: '#d33',
       });
     });
 };
+
+
+  const handleDeleteIzin = (id) => {
+    fetch(`https://localhost:44314/api/personelizin/DeleteLeave/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Silme başarısız.");
+        return fetch("https://localhost:44314/api/personelizin/listleave");
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        setIzinler(data);
+        Swal.fire({
+          icon: 'success',
+          title: 'Silindi!',
+          text: 'Personel izni başarıyla silindi.',
+          confirmButtonColor: '#3085d6',
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Hata!',
+          text: 'Silme işlemi başarısız oldu.',
+          confirmButtonColor: '#d33',
+        });
+      });
+  };
 
   return (
     <>
@@ -94,7 +116,7 @@ const handleDeleteIzin = (id) => {
               type="text"
               placeholder="İsim Soyisim giriniz..."
               value={isim}
-              onChange={(e) => setIsim(e.target.value)}
+              onChange={handleIsimChange}
               style={styles.input}
             />
             <input
@@ -177,17 +199,18 @@ const styles = {
   title: { textAlign: "center", marginBottom: "20px" },
   inputGroup: {
     display: "flex",
-    gap: "10px",
+    flexDirection: "column",
+    gap: "12px",
     marginBottom: "20px",
-    justifyContent: "center",
     alignItems: "center",
-    flexWrap: "wrap",
   },
   input: {
     padding: "12px",
     fontSize: "18px",
     borderRadius: "6px",
     border: "1px solid #ccc",
+    backgroundColor: "#A9A9A9",
+    color: "#000",
     width: "220px",
     boxSizing: "border-box",
   },

@@ -28,31 +28,49 @@ function Home() {
       .catch((err) => console.error("Görevleri çekerken hata:", err));
   }, []);
 
-  const handleAddTask = () => {
-    if (!newTaskText.trim() || !newTaskDate) {
-      alert("Lütfen görev ve tarih giriniz!");
-      return;
-    }
+ const handleAddTask = () => {
+  if (!newTaskText.trim() || !newTaskDate) {
+    alert("Lütfen görev ve tarih giriniz!");
+    return;
+  }
 
-    const newTask = {
-      text: newTaskText,
-      date: newTaskDate,
-      completed: false,
-    };
-
-    fetch("https://localhost:44314/api/Gorevler/AddTask", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newTask),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setTasks(data);
-        setNewTaskText("");
-        setNewTaskDate("");
-      })
-      .catch((err) => console.error("Görev ekleme hatası:", err));
+  const newTask = {
+    text: newTaskText,
+    date: newTaskDate,
+    completed: false,
   };
+
+  fetch("https://localhost:44314/api/Gorevler/AddTask", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(newTask),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      setTasks(data);
+      setNewTaskText("");
+      setNewTaskDate("");
+
+      // ✅ Ekleme başarılı uyarısı
+      Swal.fire({
+        icon: 'success',
+        title: 'Eklendi!',
+        text: 'Görev başarıyla eklendi.',
+        confirmButtonColor: '#3085d6',
+      });
+    })
+    .catch((err) => {
+      console.error("Görev ekleme hatası:", err);
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Hata!',
+        text: 'Görev eklenemedi.',
+        confirmButtonColor: '#d33',
+      });
+    });
+};
+
 
   const handleToggleDone = (task) => {
     const updatedTask = { ...task, completed: !task.completed };
@@ -292,15 +310,19 @@ paddingRight: "320px",
     marginTop: "25px",
     marginBottom: "12px",
   },
-  input: {
-    width: "100%",
-    padding: "8px",
-    fontSize: "16px",
-    marginBottom: "10px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    boxSizing: "border-box",
-  },
+ input: {
+  width: "100%",
+  padding: "8px",
+  fontSize: "16px",
+  marginBottom: "10px",
+  borderRadius: "6px",
+  border: "1px solid #ccc",
+  backgroundColor: "#A9A9A9", // daha yumuşak açık mavi-gri ton
+  color: "#000", // yazı rengi siyah
+  boxSizing: "border-box",
+    WebkitAppearance: "none",
+  MozAppearance: "textfield",
+},
   addButton: {
     padding: "10px 20px",
     backgroundColor: "#1976d2",

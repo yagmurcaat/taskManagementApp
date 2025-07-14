@@ -109,8 +109,11 @@ const handleDeleteTask = (id) => {
   return (
     <div style={styles.wrapper}>
       <div style={styles.container}>
+        
+ <div style={styles.box}>
         <Header title="Tamamlanmış Görevler" />
 
+ 
         <div style={styles.countCard}>
           <h3>Toplam Tamamlanmış Görev</h3>
           <p style={styles.countNumber}>{completedTasks.length}</p>
@@ -214,6 +217,7 @@ const handleDeleteTask = (id) => {
         <button onClick={() => navigate("/")} style={styles.backButton}>
           Ana Sayfaya Geri Dön
         </button>
+        </div>
       </div>
     </div>
   );
@@ -226,32 +230,25 @@ const styles = {
     padding: "20px",
   },
   container: {
-  
     margin: "5px auto",
     backgroundColor: "#f2f5f7",
-   paddingTop: "60px",
-paddingBottom: "150px",
-paddingLeft: "300px",
-paddingRight: "320px",
-
+    paddingTop: "60px",
+    paddingBottom: "150px",
+    paddingLeft: "300px",
+    paddingRight: "320px",
     borderRadius: "12px",
     boxShadow: "0 0 10px rgba(0,0,0,0.1)",
   },
-  box: {
-    padding: "100px",
-    backgroundColor: "white",
-    borderRadius: "12px",
-  },
   countCard: {
-    backgroundColor: "#81c784", // Daha açık yeşil
-    color: "white",
+    backgroundColor: "#add8e6", // ✅ Bebe mavisi
+    color: "#1a1a1a",            // Daha koyu yazı rengi
     borderRadius: "12px",
     padding: "15px 25px",
     textAlign: "center",
-     // Daha küçük genişlik
     fontWeight: "bold",
     fontSize: "18px",
     userSelect: "none",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)", // Hafif gölge
   },
   countNumber: {
     fontSize: "26px",
@@ -269,6 +266,8 @@ paddingRight: "320px",
     fontSize: "16px",
     borderRadius: "6px",
     border: "1px solid #ccc",
+         backgroundColor: "#A9A9A9", // daha yumuşak açık mavi-gri ton
+  color: "#000", // yazı rengi siyah
     boxSizing: "border-box",
   },
   table: {
@@ -311,6 +310,16 @@ paddingRight: "320px",
     marginLeft: "auto",
     marginRight: "auto",
   },
+ box: {
+  padding: "40px 60px",          // Üst-alt 40px, sağ-sol 60px
+  backgroundColor: "white",
+  borderRadius: "12px",
+  boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+  maxWidth: "1000px",             // Maksimum genişlik artırıldı
+  width: "110%",                 // Container içine tam genişlik alacak
+  margin: "0 auto",              // Ortalamak için
+},
+
 };
 
 export default TamamlananGorevler;
