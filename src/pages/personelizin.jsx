@@ -2,13 +2,16 @@ import React, { useState, useEffect } from "react";
 import Header from "../Components/header";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+import PageLayout from "../Components/PageLayout";
 
+// ... diğer importlar
 function PersonelIzin() {
   const [izinler, setIzinler] = useState([]);
   const [isim, setIsim] = useState("");
   const [baslangicTarihi, setBaslangicTarihi] = useState("");
   const [bitisTarihi, setBitisTarihi] = useState("");
+  const [izinTuru, setIzinTuru] = useState(""); // zaten vardı
 
   useEffect(() => {
     fetch("https://localhost:44314/api/personelizin/listleave")
@@ -17,64 +20,70 @@ function PersonelIzin() {
       .catch((err) => console.error(err));
   }, []);
 
-  // Sadece harf ve boşluk kabul eden isim input handler
   const handleIsimChange = (e) => {
     const value = e.target.value;
     const filtered = value.replace(/[^a-zA-ZığüşöçİĞÜŞÖÇ\s]/g, "");
     setIsim(filtered);
   };
 
-  const handleAddIzin = () => {
-  if (isim.trim() === "" || baslangicTarihi === "" || bitisTarihi === "") return;
-
-  const baslangic = new Date(baslangicTarihi);
-  const bitis = new Date(bitisTarihi);
-  if (bitis <= baslangic) {
-    alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
-    return;
-  }
-
-  const yeniIzin = {
-    isim,
-    baslangicTarihi,
-    bitisTarihi,
+  const showToast = (icon, title) => {
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon,
+      title,
+      showConfirmButton: false,
+      timer: 2000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener("mouseenter", Swal.stopTimer);
+        toast.addEventListener("mouseleave", Swal.resumeTimer);
+      },
+    });
   };
 
-  fetch("https://localhost:44314/api/personelizin/Addleave", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(yeniIzin),
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("Ekleme başarısız.");
-      return fetch("https://localhost:44314/api/personelizin/listleave");
-    })
-    .then((res) => res.json())
-    .then((data) => {
-      setIzinler(data);
-      setIsim("");
-      setBaslangicTarihi("");
-      setBitisTarihi("");
+  const handleAddIzin = () => {
+    if (isim.trim() === "" || baslangicTarihi === "" || bitisTarihi === "" || izinTuru === "")
+      return;
 
-      // ✅ Ekleme sonrası başarılı mesajı
-      Swal.fire({
-        icon: 'success',
-        title: 'Eklendi!',
-        text: 'Personel izni başarıyla eklendi.',
-        confirmButtonColor: '#3085d6',
-      });
-    })
-    .catch((err) => {
-      console.error(err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Hata!',
-        text: 'Ekleme işlemi başarısız oldu.',
-        confirmButtonColor: '#d33',
-      });
-    });
+    const baslangic = new Date(baslangicTarihi);
+    const bitis = new Date(bitisTarihi);
+    if (bitis <= baslangic) {
+      alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
+      return;
+    }
+
+  const yeniIzin = {
+  Isim: isim,
+  BaslangicTarihi: baslangicTarihi,
+  BitisTarihi: bitisTarihi,
+  IzinTuru: izinTuru,
 };
 
+
+    fetch("https://localhost:44314/api/personelizin/Addleave", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(yeniIzin),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Ekleme başarısız.");
+        return fetch("https://localhost:44314/api/personelizin/listleave");
+      })
+      .then((res) => res.json())
+      .then((data) => {
+        setIzinler(data);
+        setIsim("");
+        setBaslangicTarihi("");
+        setBitisTarihi("");
+        setIzinTuru(""); // sıfırla
+        showToast("success", "Personel izni başarıyla eklendi.");
+      })
+      .catch((err) => {
+        console.error(err);
+        showToast("error", "Ekleme işlemi başarısız oldu.");
+      });
+  };
 
   const handleDeleteIzin = (id) => {
     fetch(`https://localhost:44314/api/personelizin/DeleteLeave/${id}`, {
@@ -87,30 +96,20 @@ function PersonelIzin() {
       .then((res) => res.json())
       .then((data) => {
         setIzinler(data);
-        Swal.fire({
-          icon: 'success',
-          title: 'Silindi!',
-          text: 'Personel izni başarıyla silindi.',
-          confirmButtonColor: '#3085d6',
-        });
+        showToast("success", "Personel izni başarıyla silindi.");
       })
       .catch((err) => {
         console.error(err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Hata!',
-          text: 'Silme işlemi başarısız oldu.',
-          confirmButtonColor: '#d33',
-        });
+        showToast("error", "Silme işlemi başarısız oldu.");
       });
   };
 
   return (
-    <>
+    <PageLayout>
       <div style={styles.container}>
-        <Header title="Personel İzin" />
-        <div style={styles.box}>
-          <h2 style={styles.title}>Personel İzin</h2>
+        <Header title="Personel İzinleri" />
+        <div style={styles.inner}>
+          <h2 style={styles.title}>İzin Ekle</h2>
           <div style={styles.inputGroup}>
             <input
               type="text"
@@ -131,7 +130,18 @@ function PersonelIzin() {
               onChange={(e) => setBitisTarihi(e.target.value)}
               style={styles.input}
             />
-            <button onClick={handleAddIzin} style={styles.button}>
+            <select
+              value={izinTuru}
+              onChange={(e) => setIzinTuru(e.target.value)}
+              style={styles.input}
+            >
+              <option value="">İzin Türü Seçiniz</option>
+              <option value="Yıllık İzin">Yıllık İzin</option>
+              <option value="Hastalık İzni">Hastalık İzni</option>
+              <option value="Ücretsiz İzin">Ücretsiz İzin</option>
+              <option value="Diğer">Diğer</option>
+            </select>
+            <button onClick={handleAddIzin} style={styles.addButton}>
               Ekle
             </button>
           </div>
@@ -142,13 +152,14 @@ function PersonelIzin() {
               <tr>
                 <th style={styles.th}>İsim Soyisim</th>
                 <th style={styles.th}>Tarih Aralığı</th>
-                <th style={styles.th}></th>
+                <th style={styles.th}>İzin Türü</th>
+                <th style={styles.th}>İşlem</th>
               </tr>
             </thead>
             <tbody>
               {izinler.length === 0 ? (
                 <tr>
-                  <td colSpan="3" style={{ textAlign: "center", padding: "15px" }}>
+                  <td colSpan="4" style={{ textAlign: "center", padding: "15px" }}>
                     Henüz izin girilmedi.
                   </td>
                 </tr>
@@ -160,12 +171,12 @@ function PersonelIzin() {
                       {new Date(i.baslangicTarihi).toLocaleDateString()} -{" "}
                       {new Date(i.bitisTarihi).toLocaleDateString()}
                     </td>
+                    <td style={styles.td}>{i.izinTuru}</td>
                     <td style={styles.td}>
                       <IconButton
                         onClick={() => handleDeleteIzin(i.id)}
                         color="error"
                         size="large"
-                        aria-label="delete"
                       >
                         <DeleteIcon fontSize="inherit" />
                       </IconButton>
@@ -177,55 +188,84 @@ function PersonelIzin() {
           </table>
         </div>
       </div>
-    </>
+    </PageLayout>
   );
 }
 
+
 const styles = {
   container: {
-    margin: "5px auto",
-    backgroundColor: "#f2f5f7",
-    paddingBottom: "150px",
-    paddingLeft: "250px",
-    paddingRight: "320px",
-    borderRadius: "12px",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-  },
-  box: {
-    padding: "100px",
-    backgroundColor: "white",
-    borderRadius: "12px",
-  },
-  title: { textAlign: "center", marginBottom: "20px" },
-  inputGroup: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "12px",
-    marginBottom: "20px",
-    alignItems: "center",
-  },
-  input: {
-    padding: "12px",
-    fontSize: "18px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-    backgroundColor: "#A9A9A9",
-    color: "#000",
-    width: "220px",
+    maxWidth: "1100px",
+    margin: "0 auto",
+    padding: "40px 20px",
     boxSizing: "border-box",
   },
-  button: {
-    padding: "12px 24px",
-    backgroundColor: "#1976d2",
+  inner: {
+    backgroundColor: "#fff",
+    borderRadius: "16px",
+    boxShadow: "0 6px 18px rgba(0,0,0,0.05)",
+    padding: "40px",
+  },
+  title: {
+    textAlign: "center",
+    fontSize: "2rem",
+    fontWeight: "700",
+    color: "#2c3e50",
+    marginBottom: "20px",
+  },
+  inputGroup: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: "16px",
+    marginBottom: "30px",
+    flexWrap: "wrap",
+  },
+  input: {
+    flex: "1",
+    padding: "14px",
+    fontSize: "16px",
+    borderRadius: "10px",
+    border: "1px solid #ccc",
+    backgroundColor: "#f0f2f5",
+    color: "#333",
+    minWidth: "200px",
+    boxSizing: "border-box",
+  },
+  addButton: {
+    padding: "14px 28px",
+    background: "linear-gradient(45deg, #1976d2, #42a5f5)",
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "10px",
     cursor: "pointer",
+    fontWeight: "600",
+    alignSelf: "flex-start",
   },
-  subtitle: { textAlign: "center", marginBottom: "10px" },
-  table: { width: "100%", borderCollapse: "collapse" },
-  th: { backgroundColor: "#1976d2", color: "white", padding: "10px" },
-  td: { border: "1px solid #ddd", padding: "10px" },
+  subtitle: {
+    textAlign: "left",
+    fontSize: "18px",
+    fontWeight: "600",
+    margin: "30px 0 10px",
+    color: "#34495e",
+  },
+  table: {
+    width: "100%",
+    borderCollapse: "separate",
+    borderSpacing: "0 10px",
+  },
+  th: {
+    textAlign: "left",
+    padding: "12px",
+    backgroundColor: "#1976d2",
+    color: "#fff",
+    borderRadius: "8px 8px 0 0",
+  },
+  td: {
+    backgroundColor: "#fff",
+    padding: "12px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+    borderRadius: "6px",
+  },
 };
 
 export default PersonelIzin;

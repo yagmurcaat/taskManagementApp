@@ -6,7 +6,8 @@ import EditIcon from "@mui/icons-material/Edit";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
-import Swal from 'sweetalert2';
+import Swal from "sweetalert2";
+import PageLayout from "../Components/PageLayout";
 
 function TamamlananGorevler() {
   const [tasks, setTasks] = useState([]);
@@ -64,34 +65,34 @@ function TamamlananGorevler() {
       })
       .catch((err) => console.error("Kaydetme hatası:", err));
   };
-const handleDeleteTask = (id) => {
-  fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
-    method: "DELETE",
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("Silme başarısız.");
-      return res.json();
-    })
-    .then((data) => {
-      setTasks(data);
-      Swal.fire({
-        icon: 'success',
-        title: 'Silindi!',
-        text: 'Görev başarıyla silindi.',
-        confirmButtonColor: '#3085d6',
-      });
-    })
-    .catch((err) => {
-      console.error("Silme hatası:", err);
-      Swal.fire({
-        icon: 'error',
-        title: 'Hata!',
-        text: 'Görev silinemedi.',
-        confirmButtonColor: '#d33',
-      });
-    });
-};
 
+  const handleDeleteTask = (id) => {
+    fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
+      method: "DELETE",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Silme başarısız.");
+        return res.json();
+      })
+      .then((data) => {
+        setTasks(data);
+        Swal.fire({
+          icon: "success",
+          title: "Silindi!",
+          text: "Görev başarıyla silindi.",
+          confirmButtonColor: "#3085d6",
+        });
+      })
+      .catch((err) => {
+        console.error("Silme hatası:", err);
+        Swal.fire({
+          icon: "error",
+          title: "Hata!",
+          text: "Görev silinemedi.",
+          confirmButtonColor: "#d33",
+        });
+      });
+  };
 
   const completedTasks = tasks.filter((t) => t.completed);
   const filteredTasks = completedTasks.filter((t) =>
@@ -107,81 +108,77 @@ const handleDeleteTask = (id) => {
   };
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.container}>
-        
- <div style={styles.box}>
-        <Header title="Tamamlanmış Görevler" />
+    <PageLayout>
+      <div style={styles.inner}>
+        <Header title="Tamamlanan Görevler" />
 
- 
         <div style={styles.countCard}>
           <h3>Toplam Tamamlanmış Görev</h3>
           <p style={styles.countNumber}>{completedTasks.length}</p>
         </div>
 
-        <div style={styles.spacer}></div>
-
-        <div style={styles.filterInputs}>
-          <input
-            type="text"
-            placeholder="Görev filtrele..."
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            style={styles.input}
-          />
-        </div>
+        <input
+          type="text"
+          placeholder="Görev filtrele..."
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+          style={styles.input}
+        />
 
         {filteredTasks.length === 0 ? (
-          <p style={{ textAlign: "center" }}>Tamamlanmış görev yok.</p>
+          <p style={{ textAlign: "center", color: "#666" }}>
+            Tamamlanmış görev yok.
+          </p>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}></th>
-                <th style={styles.th}>Görev</th>
-                <th style={styles.th}>Tarih</th>
-                <th style={styles.th}>İşlem</th>
+                <th></th>
+                <th>Görev</th>
+                <th>Tarih</th>
+                <th>İşlemler</th>
               </tr>
             </thead>
             <tbody>
               {filteredTasks.map((t) => (
-                <tr key={t.id}>
-                  <td style={styles.td}>
+                <tr key={t.id} style={styles.completedRow}>
+                  <td>
                     <Checkbox
                       checked={t.completed}
                       onChange={() => handleToggleDone(t)}
                       color="primary"
                     />
                   </td>
-                  <td style={styles.td}>
+                  <td>
                     {editId === t.id ? (
                       <>
                         <input
                           type="text"
                           value={editText}
                           onChange={(e) => setEditText(e.target.value)}
-                          style={styles.input}
+                          style={styles.editInput}
                         />
                         <input
                           type="date"
                           value={editDate}
                           onChange={(e) => setEditDate(e.target.value)}
-                          style={{ ...styles.input, marginTop: "10px" }}
+                          style={{ ...styles.editInput, marginTop: "8px" }}
                         />
                       </>
                     ) : (
                       <span
                         style={{
-                          textDecoration: t.completed ? "line-through" : "none",
-                          color: t.completed ? "gray" : "black",
+                          textDecoration: "line-through",
+                          color: "#999",
+                          fontWeight: "500",
                         }}
                       >
                         {t.text}
                       </span>
                     )}
                   </td>
-                  <td style={styles.td}>{formatDate(t.date)}</td>
-                  <td style={styles.td}>
+                  <td>{formatDate(t.date)}</td>
+                  <td>
                     {editId === t.id ? (
                       <button onClick={handleSaveClick} style={styles.saveButton}>
                         Kaydet
@@ -200,10 +197,10 @@ const handleDeleteTask = (id) => {
                         <IconButton
                           onClick={() => handleDeleteTask(t.id)}
                           color="error"
-                          size="large"
                           aria-label="delete"
+                          size="large"
                         >
-                          <DeleteIcon fontSize="inherit" />
+                          <DeleteIcon />
                         </IconButton>
                       </>
                     )}
@@ -214,112 +211,100 @@ const handleDeleteTask = (id) => {
           </table>
         )}
 
-        <button onClick={() => navigate("/")} style={styles.backButton}>
-          Ana Sayfaya Geri Dön
+        <button onClick={() => navigate("/")} style={styles.navButton}>
+          Ana Sayfaya Dön
         </button>
-        </div>
       </div>
-    </div>
+    </PageLayout>
   );
 }
 
 const styles = {
-  wrapper: {
-    display: "flex",
-    justifyContent: "center",
-    padding: "20px",
-  },
-  container: {
-    margin: "5px auto",
-    backgroundColor: "#f2f5f7",
-    paddingTop: "60px",
-    paddingBottom: "150px",
-    paddingLeft: "300px",
-    paddingRight: "320px",
-    borderRadius: "12px",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+  inner: {
+    maxWidth: "1100px",
+    width: "100%",
+    margin: "0 auto",
+    padding: "40px 20px 80px",
   },
   countCard: {
-    backgroundColor: "#add8e6", // ✅ Bebe mavisi
-    color: "#1a1a1a",            // Daha koyu yazı rengi
+    backgroundColor: "#add8e6",
     borderRadius: "12px",
     padding: "15px 25px",
     textAlign: "center",
     fontWeight: "bold",
     fontSize: "18px",
-    userSelect: "none",
-    boxShadow: "0 2px 10px rgba(0,0,0,0.1)", // Hafif gölge
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    marginBottom: "20px",
   },
   countNumber: {
     fontSize: "26px",
     margin: 0,
   },
-  spacer: {
-    height: "20px", // yeşil kutu ile tablo arası boşluk
-  },
-  filterInputs: {
-    marginBottom: "20px",
-  },
   input: {
     width: "100%",
-    padding: "8px",
-    fontSize: "16px",
-    borderRadius: "6px",
+    padding: "16px 24px",
+    fontSize: "18px",
+    marginBottom: "20px",
+    borderRadius: "10px",
     border: "1px solid #ccc",
-         backgroundColor: "#A9A9A9", // daha yumuşak açık mavi-gri ton
-  color: "#000", // yazı rengi siyah
+    backgroundColor: "#f6f8fa",
+    color: "#333",
     boxSizing: "border-box",
+  },
+  editInput: {
+    width: "100%",
+    padding: "14px 22px",
+    fontSize: "17px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    backgroundColor: "#fff",
+    color: "#111",
+    boxSizing: "border-box",
+    marginBottom: "10px",
   },
   table: {
     width: "100%",
-    borderCollapse: "collapse",
+    borderCollapse: "separate",
+    borderSpacing: "0 12px",
+    fontSize: "17px",
+    lineHeight: "1.6",
+    marginTop: "20px",
   },
-  th: {
-    backgroundColor: "#1976d2",
-    color: "white",
-    padding: "10px",
-    textAlign: "left",
-  },
-  td: {
-    border: "1px solid #ddd",
-    padding: "10px",
-    verticalAlign: "middle",
+  completedRow: {
+    backgroundColor: "#f0f4f8",
+    color: "#999",
   },
   fab: {
-    marginRight: "6px",
-    width: "40px",
-    height: "40px",
+    marginRight: "10px",
+    width: "36px",
+    height: "36px",
   },
   saveButton: {
-    padding: "6px 12px",
+    padding: "8px 16px",
     backgroundColor: "#388e3c",
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "8px",
     cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
   },
-  backButton: {
-    marginTop: "20px",
-    padding: "10px 20px",
+  navButton: {
+    marginTop: "35px",
+    padding: "14px 28px",
     backgroundColor: "#1976d2",
     color: "white",
     border: "none",
-    borderRadius: "6px",
+    borderRadius: "12px",
     cursor: "pointer",
+    fontWeight: "700",
+    fontSize: "16px",
     display: "block",
     marginLeft: "auto",
     marginRight: "auto",
+    boxShadow: "0 6px 12px rgba(25, 118, 210, 0.3)",
+    transition: "background-color 0.3s ease",
   },
- box: {
-  padding: "40px 60px",          // Üst-alt 40px, sağ-sol 60px
-  backgroundColor: "white",
-  borderRadius: "12px",
-  boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-  maxWidth: "1000px",             // Maksimum genişlik artırıldı
-  width: "110%",                 // Container içine tam genişlik alacak
-  margin: "0 auto",              // Ortalamak için
-},
-
 };
 
 export default TamamlananGorevler;
