@@ -15,6 +15,7 @@ function TamamlananGorevler() {
   const [editText, setEditText] = useState("");
   const [editDate, setEditDate] = useState("");
   const [filterText, setFilterText] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -112,103 +113,54 @@ function TamamlananGorevler() {
       <div style={styles.inner}>
         <Header title="Tamamlanan Görevler" />
 
-        <div style={styles.countCard}>
+        <div
+          style={{ ...styles.countCard, cursor: "pointer" }}
+          onClick={() => setShowPopup(true)}
+        >
           <h3>Toplam Tamamlanmış Görev</h3>
           <p style={styles.countNumber}>{completedTasks.length}</p>
         </div>
 
-        <input
-          type="text"
-          placeholder="Görev filtrele..."
-          value={filterText}
-          onChange={(e) => setFilterText(e.target.value)}
-          style={styles.input}
-        />
+       
 
-        {filteredTasks.length === 0 ? (
-          <p style={{ textAlign: "center", color: "#666" }}>
-            Tamamlanmış görev yok.
-          </p>
-        ) : (
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th></th>
-                <th>Görev</th>
-                <th>Tarih</th>
-                <th>İşlemler</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTasks.map((t) => (
-                <tr key={t.id} style={styles.completedRow}>
-                  <td>
-                    <Checkbox
-                      checked={t.completed}
-                      onChange={() => handleToggleDone(t)}
-                      color="primary"
-                    />
-                  </td>
-                  <td>
-                    {editId === t.id ? (
-                      <>
-                        <input
-                          type="text"
-                          value={editText}
-                          onChange={(e) => setEditText(e.target.value)}
-                          style={styles.editInput}
-                        />
-                        <input
-                          type="date"
-                          value={editDate}
-                          onChange={(e) => setEditDate(e.target.value)}
-                          style={{ ...styles.editInput, marginTop: "8px" }}
-                        />
-                      </>
-                    ) : (
-                      <span
-                        style={{
-                          textDecoration: "line-through",
-                          color: "#999",
-                          fontWeight: "500",
-                        }}
+        {showPopup && (
+          <div style={styles.popupOverlay}>
+            <div style={styles.popupContent}>
+              <h2 style={{ marginBottom: "20px", textAlign: "center" }}>
+                Tamamlanan Görevler
+              </h2>
+              <div style={styles.cardContainer}>
+                {filteredTasks.map((t) => (
+                  <div key={t.id} style={styles.taskCard}>
+                    <h4 style={{ textDecoration: "line-through", color: "#555" }}>{t.text}</h4>
+                    <p style={{ color: "#888" }}>Tarih: {formatDate(t.date)}</p>
+                    <div style={{ marginTop: "10px" }}>
+                      <Fab
+                        color="warning"
+                        size="small"
+                        aria-label="edit"
+                        onClick={() => handleEditClick(t.id, t.text, t.date)}
+                        style={styles.fab}
                       >
-                        {t.text}
-                      </span>
-                    )}
-                  </td>
-                  <td>{formatDate(t.date)}</td>
-                  <td>
-                    {editId === t.id ? (
-                      <button onClick={handleSaveClick} style={styles.saveButton}>
-                        Kaydet
-                      </button>
-                    ) : (
-                      <>
-                        <Fab
-                          color="warning"
-                          size="small"
-                          aria-label="edit"
-                          onClick={() => handleEditClick(t.id, t.text, t.date)}
-                          style={styles.fab}
-                        >
-                          <EditIcon />
-                        </Fab>
-                        <IconButton
-                          onClick={() => handleDeleteTask(t.id)}
-                          color="error"
-                          aria-label="delete"
-                          size="large"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        <EditIcon />
+                      </Fab>
+                      <IconButton
+                        onClick={() => handleDeleteTask(t.id)}
+                        color="error"
+                        aria-label="delete"
+                        size="large"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button style={styles.closeButton} onClick={() => setShowPopup(false)}>
+                Kapat
+              </button>
+            </div>
+          </div>
         )}
 
         <button onClick={() => navigate("/")} style={styles.navButton}>
@@ -251,43 +203,58 @@ const styles = {
     color: "#333",
     boxSizing: "border-box",
   },
-  editInput: {
-    width: "100%",
-    padding: "14px 22px",
-    fontSize: "17px",
-    borderRadius: "8px",
-    border: "1px solid #ccc",
+  popupOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    width: "100vw",
+    height: "100vh",
+    backgroundColor: "rgba(0,0,0,0.5)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 9999,
+  },
+  popupContent: {
     backgroundColor: "#fff",
-    color: "#111",
-    boxSizing: "border-box",
-    marginBottom: "10px",
+    padding: "40px",
+    borderRadius: "16px",
+    width: "90%",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    boxShadow: "0 8px 16px rgba(0,0,0,0.25)",
   },
-  table: {
-    width: "100%",
-    borderCollapse: "separate",
-    borderSpacing: "0 12px",
-    fontSize: "17px",
-    lineHeight: "1.6",
+  closeButton: {
     marginTop: "20px",
+    padding: "12px 24px",
+    backgroundColor: "#1976d2",
+    color: "white",
+    border: "none",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    fontSize: "16px",
+    display: "block",
+    marginLeft: "auto",
+    marginRight: "auto",
   },
-  completedRow: {
-    backgroundColor: "#f0f4f8",
-    color: "#999",
+  cardContainer: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: "20px",
+  },
+  taskCard: {
+    backgroundColor: "#e6f2ff",
+    border: "1px solid #b3d1ff",
+    borderRadius: "12px",
+    padding: "20px",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+    transition: "transform 0.2s",
   },
   fab: {
     marginRight: "10px",
     width: "36px",
     height: "36px",
-  },
-  saveButton: {
-    padding: "8px 16px",
-    backgroundColor: "#388e3c",
-    color: "white",
-    border: "none",
-    borderRadius: "8px",
-    cursor: "pointer",
-    fontWeight: "600",
-    fontSize: "14px",
   },
   navButton: {
     marginTop: "35px",

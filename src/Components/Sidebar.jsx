@@ -14,7 +14,7 @@ const styles = {
     fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
     display: "flex",
     flexDirection: "column",
-    justifyContent: "flex-start",
+    justifyContent: "space-between", // ⬅️ alt kısmı aktif eder
     alignItems: "stretch",
     overflowY: "auto",
     borderTopRightRadius: "40px",
@@ -65,6 +65,17 @@ const styles = {
     backgroundColor: "#ff6f61",
     borderRadius: "4px",
   },
+  logoutButton: {
+    marginTop: "40px",
+    padding: "12px",
+    backgroundColor: "#ef5350",
+    color: "white",
+    fontWeight: "600",
+    border: "none",
+    borderRadius: "8px",
+    cursor: "pointer",
+    transition: "background-color 0.3s ease",
+  },
 };
 
 function Sidebar() {
@@ -78,43 +89,56 @@ function Sidebar() {
 
   return (
     <aside style={styles.sidebar}>
-      <h2 style={styles.logo}>Görev Yönetimi</h2>
-      <nav>
-        <ul style={styles.ul}>
-          {menuItems.map(({ path, label, icon }) => {
-            const isActive = location.pathname === path;
-            return (
-              <li key={path} style={styles.li}>
-                <Link
-                  to={path}
-                  title={label}
-                  style={{
-                    ...styles.link,
-                    backgroundColor: isActive ? "#1976d2" : "transparent",
-                    color: isActive ? "white" : "#333",
-                    boxShadow: isActive ? "0 4px 12px rgba(25, 118, 210, 0.4)" : "none",
-                    position: "relative",
-                    paddingLeft: "20px",
-                  }}
-                >
-                  {isActive && <span style={styles.activeBar}></span>}
-                  <span
+      <div>
+        <h2 style={styles.logo}>Görev Yönetimi</h2>
+        <nav>
+          <ul style={styles.ul}>
+            {menuItems.map(({ path, label, icon }) => {
+              const isActive = location.pathname === path;
+              return (
+                <li key={path} style={styles.li}>
+                  <Link
+                    to={path}
+                    title={label}
                     style={{
-                      ...styles.icon,
-                      color: isActive ? "white" : "#1976d2",
-                      transition: "transform 0.3s ease",
+                      ...styles.link,
+                      backgroundColor: isActive ? "#1976d2" : "transparent",
+                      color: isActive ? "white" : "#333",
+                      boxShadow: isActive ? "0 4px 12px rgba(25, 118, 210, 0.4)" : "none",
+                      position: "relative",
+                      paddingLeft: "20px",
                     }}
-                    className="sidebar-icon"
                   >
-                    {icon}
-                  </span>
-                  {label}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                    {isActive && <span style={styles.activeBar}></span>}
+                    <span
+                      style={{
+                        ...styles.icon,
+                        color: isActive ? "white" : "#1976d2",
+                        transition: "transform 0.3s ease",
+                      }}
+                      className="sidebar-icon"
+                    >
+                      {icon}
+                    </span>
+                    {label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      </div>
+
+      {/* 🚪 Oturumu Kapat Butonu */}
+      <button
+        style={styles.logoutButton}
+        onClick={() => {
+          sessionStorage.removeItem("isAuthenticated");
+          window.location.href = "/login";
+        }}
+      >
+        Oturumu Kapat
+      </button>
     </aside>
   );
 }
