@@ -1,22 +1,19 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Components/header";
-import Checkbox from "@mui/material/Checkbox";
-import Fab from "@mui/material/Fab";
-import EditIcon from "@mui/icons-material/Edit";
+
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import PageLayout from "../Components/PageLayout";
 
-function TamamlananGorevler() {
+function Completed() {
   const [tasks, setTasks] = useState([]);
-  const [editId, setEditId] = useState(null);
-  const [editText, setEditText] = useState("");
-  const [editDate, setEditDate] = useState("");
+
   const [filterText, setFilterText] = useState("");
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
+  
 
   useEffect(() => {
     fetch("https://localhost:44314/api/Gorevler/ListTask")
@@ -36,35 +33,9 @@ function TamamlananGorevler() {
       .then((res) => res.json())
       .then((data) => setTasks(data))
       .catch((err) => console.error("Güncelleme hatası:", err));
-  };
+  
 
-  const handleEditClick = (id, currentText, currentDate) => {
-    setEditId(id);
-    setEditText(currentText);
-    setEditDate(currentDate);
-  };
-
-  const handleSaveClick = () => {
-    const updatedTask = {
-      id: editId,
-      text: editText,
-      date: editDate,
-      completed: tasks.find((t) => t.id === editId)?.completed || false,
-    };
-
-    fetch("https://localhost:44314/api/Gorevler/UpdateTask", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(updatedTask),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setTasks(data);
-        setEditId(null);
-        setEditText("");
-        setEditDate("");
-      })
-      .catch((err) => console.error("Kaydetme hatası:", err));
+    
   };
 
   const handleDeleteTask = (id) => {
@@ -130,31 +101,39 @@ function TamamlananGorevler() {
                 Tamamlanan Görevler
               </h2>
               <div style={styles.cardContainer}>
-                {filteredTasks.map((t) => (
-                  <div key={t.id} style={styles.taskCard}>
-                    <h4 style={{ textDecoration: "line-through", color: "#555" }}>{t.text}</h4>
-                    <p style={{ color: "#888" }}>Tarih: {formatDate(t.date)}</p>
-                    <div style={{ marginTop: "10px" }}>
-                      <Fab
-                        color="warning"
-                        size="small"
-                        aria-label="edit"
-                        onClick={() => handleEditClick(t.id, t.text, t.date)}
-                        style={styles.fab}
-                      >
-                        <EditIcon />
-                      </Fab>
-                      <IconButton
-                        onClick={() => handleDeleteTask(t.id)}
-                        color="error"
-                        aria-label="delete"
-                        size="large"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </div>
-                  </div>
-                ))}
+               {filteredTasks.map((t) => (
+  <div key={t.id} style={styles.taskCard}>
+    <h4 style={{ textDecoration: "line-through", color: "#555" }}>{t.text}</h4>
+    <p style={{ color: "#888" }}><strong>Tarih:</strong> {formatDate(t.date)}</p>
+    <p style={{ color: "#888" }}>
+      <strong>Öncelik:</strong>{" "}
+      <span
+        style={{
+          color:
+            t.oncelik === "kritik"
+              ? "red"
+              : t.oncelik === "orta"
+              ? "orange"
+              : "green",
+          fontWeight: "bold",
+        }}
+      >
+        {t.oncelik || "Belirtilmemiş"}
+      </span>
+    </p>
+    <div style={{ marginTop: "10px" }}>
+      <IconButton
+        onClick={() => handleDeleteTask(t.id)}
+        color="error"
+        aria-label="delete"
+        size="large"
+      >
+        <DeleteIcon />
+      </IconButton>
+    </div>
+  </div>
+))}
+
               </div>
               <button style={styles.closeButton} onClick={() => setShowPopup(false)}>
                 Kapat
@@ -274,4 +253,4 @@ const styles = {
   },
 };
 
-export default TamamlananGorevler;
+export default Completed;

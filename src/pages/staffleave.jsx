@@ -4,26 +4,33 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from "sweetalert2";
 import PageLayout from "../Components/PageLayout";
+import { Pagination } from "@mui/material";
 
-// ... diğer importlar
-function PersonelIzin() {
-  const [izinler, setIzinler] = useState([]);
-  const [isim, setIsim] = useState("");
-  const [baslangicTarihi, setBaslangicTarihi] = useState("");
-  const [bitisTarihi, setBitisTarihi] = useState("");
-  const [izinTuru, setIzinTuru] = useState(""); // zaten vardı
+function staffleave() {
+  const [leaves, setLeaves] = useState([]);
+  const [name, setName] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [leaveType, setLeaveType] = useState("");
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 7;
 
   useEffect(() => {
-    fetch("https://localhost:44314/api/personelizin/listleave")
-      .then((res) => res.json())
-      .then((data) => setIzinler(data))
-      .catch((err) => console.error(err));
+    fetchLeaves();
   }, []);
 
-  const handleIsimChange = (e) => {
+  const fetchLeaves = () => {
+    fetch("https://localhost:44314/api/personelizin/listleave")
+      .then((res) => res.json())
+      .then((data) => setLeaves(data))
+      .catch((err) => console.error(err));
+  };
+
+  const handleNameChange = (e) => {
     const value = e.target.value;
+    // sadece harfler ve boşluk kabul edilir (Türkçe karakterler dahil)
     const filtered = value.replace(/[^a-zA-ZığüşöçİĞÜŞÖÇ\s]/g, "");
-    setIsim(filtered);
+    setName(filtered);
   };
 
   const showToast = (icon, title) => {
@@ -42,29 +49,27 @@ function PersonelIzin() {
     });
   };
 
-  const handleAddIzin = () => {
-    if (isim.trim() === "" || baslangicTarihi === "" || bitisTarihi === "" || izinTuru === "")
-      return;
+  const handleAddLeave = () => {
+    if (!name.trim() || !startDate || !endDate || !leaveType) return;
 
-    const baslangic = new Date(baslangicTarihi);
-    const bitis = new Date(bitisTarihi);
-    if (bitis <= baslangic) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (end <= start) {
       alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
       return;
     }
 
-  const yeniIzin = {
-  Isim: isim,
-  BaslangicTarihi: baslangicTarihi,
-  BitisTarihi: bitisTarihi,
-  IzinTuru: izinTuru,
-};
-
+    const newLeave = {
+      Isim: name,
+      BaslangicTarihi: startDate,
+      BitisTarihi: endDate,
+      IzinTuru: leaveType,
+    };
 
     fetch("https://localhost:44314/api/personelizin/Addleave", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(yeniIzin),
+      body: JSON.stringify(newLeave),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Ekleme başarısız.");
@@ -72,12 +77,13 @@ function PersonelIzin() {
       })
       .then((res) => res.json())
       .then((data) => {
-        setIzinler(data);
-        setIsim("");
-        setBaslangicTarihi("");
-        setBitisTarihi("");
-        setIzinTuru(""); // sıfırla
+        setLeaves(data);
+        setName("");
+        setStartDate("");
+        setEndDate("");
+        setLeaveType("");
         showToast("success", "Personel izni başarıyla eklendi.");
+        setPage(1);
       })
       .catch((err) => {
         console.error(err);
@@ -85,7 +91,7 @@ function PersonelIzin() {
       });
   };
 
-  const handleDeleteIzin = (id) => {
+  const handleDeleteLeave = (id) => {
     fetch(`https://localhost:44314/api/personelizin/DeleteLeave/${id}`, {
       method: "DELETE",
     })
@@ -95,14 +101,20 @@ function PersonelIzin() {
       })
       .then((res) => res.json())
       .then((data) => {
-        setIzinler(data);
+        setLeaves(data);
         showToast("success", "Personel izni başarıyla silindi.");
+        const maxPage = Math.ceil(data.length / itemsPerPage);
+        if (page > maxPage) setPage(maxPage);
       })
       .catch((err) => {
         console.error(err);
         showToast("error", "Silme işlemi başarısız oldu.");
       });
   };
+
+  // paginate leaves
+  const pagedLeaves = leaves.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const pageCount = Math.ceil(leaves.length / itemsPerPage);
 
   return (
     <PageLayout>
@@ -114,25 +126,25 @@ function PersonelIzin() {
             <input
               type="text"
               placeholder="İsim Soyisim giriniz..."
-              value={isim}
-              onChange={handleIsimChange}
+              value={name}
+              onChange={handleNameChange}
               style={styles.input}
             />
             <input
               type="date"
-              value={baslangicTarihi}
-              onChange={(e) => setBaslangicTarihi(e.target.value)}
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
               style={styles.input}
             />
             <input
               type="date"
-              value={bitisTarihi}
-              onChange={(e) => setBitisTarihi(e.target.value)}
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
               style={styles.input}
             />
             <select
-              value={izinTuru}
-              onChange={(e) => setIzinTuru(e.target.value)}
+              value={leaveType}
+              onChange={(e) => setLeaveType(e.target.value)}
               style={styles.input}
             >
               <option value="">İzin Türü Seçiniz</option>
@@ -141,7 +153,7 @@ function PersonelIzin() {
               <option value="Ücretsiz İzin">Ücretsiz İzin</option>
               <option value="Diğer">Diğer</option>
             </select>
-            <button onClick={handleAddIzin} style={styles.addButton}>
+            <button onClick={handleAddLeave} style={styles.addButton}>
               Ekle
             </button>
           </div>
@@ -157,24 +169,24 @@ function PersonelIzin() {
               </tr>
             </thead>
             <tbody>
-              {izinler.length === 0 ? (
+              {pagedLeaves.length === 0 ? (
                 <tr>
                   <td colSpan="4" style={{ textAlign: "center", padding: "15px" }}>
                     Henüz izin girilmedi.
                   </td>
                 </tr>
               ) : (
-                izinler.map((i) => (
-                  <tr key={i.id}>
-                    <td style={styles.td}>{i.isim}</td>
+                pagedLeaves.map((leave) => (
+                  <tr key={leave.id}>
+                    <td style={styles.td}>{leave.isim}</td>
                     <td style={styles.td}>
-                      {new Date(i.baslangicTarihi).toLocaleDateString()} -{" "}
-                      {new Date(i.bitisTarihi).toLocaleDateString()}
+                      {new Date(leave.baslangicTarihi).toLocaleDateString()} -{" "}
+                      {new Date(leave.bitisTarihi).toLocaleDateString()}
                     </td>
-                    <td style={styles.td}>{i.izinTuru}</td>
+                    <td style={styles.td}>{leave.izinTuru}</td>
                     <td style={styles.td}>
                       <IconButton
-                        onClick={() => handleDeleteIzin(i.id)}
+                        onClick={() => handleDeleteLeave(leave.id)}
                         color="error"
                         size="large"
                       >
@@ -186,12 +198,21 @@ function PersonelIzin() {
               )}
             </tbody>
           </table>
+
+          {pageCount > 1 && (
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={(e, value) => setPage(value)}
+              color="primary"
+              style={{ marginTop: 20, display: "flex", justifyContent: "center" }}
+            />
+          )}
         </div>
       </div>
     </PageLayout>
   );
 }
-
 
 const styles = {
   container: {
@@ -268,4 +289,4 @@ const styles = {
   },
 };
 
-export default PersonelIzin;
+export default staffleave;

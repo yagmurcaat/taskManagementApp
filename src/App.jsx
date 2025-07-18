@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+ import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
-import TamamlananGorevler from "./pages/TamamlananGorevler";
-import PersonelIzin from "./pages/personelizin";
+import TamamlananGorevler from "./pages/Completed";
+import PersonelIzin from "./pages/staffleave";
 import Sidebar from "./Components/Sidebar";
 import Login from "./pages/Login";
 import { CssBaseline } from "@mui/material";
