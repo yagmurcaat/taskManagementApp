@@ -14,13 +14,26 @@ function staffleave() {
   const [leaveType, setLeaveType] = useState("");
   const [page, setPage] = useState(1);
   const itemsPerPage = 7;
+  const [employees, setEmployees] = useState([]);
+
 
   useEffect(() => {
     fetchLeaves();
+    fetchEmployees(); 
   }, []);
 
+  const fetchEmployees = () => {
+  fetch("https://localhost:44314/api/Employee/list")
+    .then((res) => res.json())
+     .then((data) => {
+      console.log("Gelen personeller:", data); // 👈 BURADA!
+      setEmployees(data);
+    })
+    .catch((err) => console.error("Personel listesi alınamadı:", err));
+};
+
   const fetchLeaves = () => {
-    fetch("https://localhost:44314/api/personelizin/listleave")
+    fetch("https://localhost:44314/api/Staffleave/listleave")
       .then((res) => res.json())
       .then((data) => setLeaves(data))
       .catch((err) => console.error(err));
@@ -49,31 +62,43 @@ function staffleave() {
     });
   };
 
-  const handleAddLeave = () => {
-    if (!name.trim() || !startDate || !endDate || !leaveType) return;
+const handleAddLeave = () => {
+  if (!name.trim() || !startDate || !endDate || !leaveType) return;
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (end <= start) {
-      alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
-      return;
-    }
+  // 🔍 Personel kontrolü
+  const matchedEmployee = employees.find(
+    (emp) => emp.username?.toLowerCase() === name.trim().toLowerCase()
+  );
 
-    const newLeave = {
-      Isim: name,
-      BaslangicTarihi: startDate,
-      BitisTarihi: endDate,
-      IzinTuru: leaveType,
-    };
+  if (!matchedEmployee) {
+    showToast("error", "Bu isimde bir personel bulunamadı.");
+    return;
+  }
 
-    fetch("https://localhost:44314/api/personelizin/Addleave", {
+  // 🔄 Tarih kontrolü
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  if (end <= start) {
+    alert("Bitiş tarihi, başlangıç tarihinden sonra olmalıdır.");
+    return;
+  }
+
+  // 👇 Devam: izin objesi oluştur
+  const newLeave = {
+    Isim: name,
+    BaslangicTarihi: startDate,
+    BitisTarihi: endDate,
+    IzinTuru: leaveType,
+  };
+
+    fetch("https://localhost:44314/api/StaffLeave/Addleave", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(newLeave),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Ekleme başarısız.");
-        return fetch("https://localhost:44314/api/personelizin/listleave");
+        return fetch("https://localhost:44314/api/StaffLeave/listleave");
       })
       .then((res) => res.json())
       .then((data) => {
@@ -92,12 +117,12 @@ function staffleave() {
   };
 
   const handleDeleteLeave = (id) => {
-    fetch(`https://localhost:44314/api/personelizin/DeleteLeave/${id}`, {
+    fetch(`https://localhost:44314/api/StaffLeave/DeleteLeave/${id}`, {
       method: "DELETE",
     })
       .then((res) => {
         if (!res.ok) throw new Error("Silme başarısız.");
-        return fetch("https://localhost:44314/api/personelizin/listleave");
+        return fetch("https://localhost:44314/api/StaffLeave/listleave");
       })
       .then((res) => res.json())
       .then((data) => {

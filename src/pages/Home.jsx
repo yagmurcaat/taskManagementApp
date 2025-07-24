@@ -174,23 +174,28 @@ function Home() {
   };
 
   const handleDeleteTask = (id) => {
-    fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
-      method: "DELETE",
-    })
-      .then((res) => res.json())
-      .then((data) => {
+  fetch(`https://localhost:44314/api/Gorevler/DeleteTask/${id}`, {
+    method: "DELETE",
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
         setTasks(data);
         Swal.fire({
           icon: "success",
           title: "Silindi!",
           text: "Görev başarıyla silindi.",
         });
-      })
-      .catch((err) => {
-        console.error("Silme hatası:", err);
-        notifyError("Görev silinemedi.");
-      });
-  };
+      } else {
+        notifyError("Görev silinemedi, sunucu yanıtı beklenmedik.");
+      }
+    })
+    .catch((err) => {
+      console.error("Silme hatası:", err);
+      notifyError("Görev silinemedi.");
+    });
+};
+
 
   const filteredTasks = tasks.filter((t) => {
     const isOverdue =

@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import HomeIcon from '@mui/icons-material/Home';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EventNoteIcon from '@mui/icons-material/EventNote';
-
+import PersonAddIcon from '@mui/icons-material/PersonAdd'; 
 const styles = {
   sidebar: {
     width: "260px",
@@ -85,6 +85,7 @@ function Sidebar() {
     { path: "/", label: "Ana Sayfa", icon: <HomeIcon /> },
     { path: "/tamamlananlar", label: "Tamamlanan Görevler", icon: <CheckCircleIcon /> },
     { path: "/personelizin", label: "Personel İzin", icon: <EventNoteIcon /> },
+     { path: "/register", label: "Kayıt Oluştur", icon: <PersonAddIcon /> },
   ];
 
   return (
