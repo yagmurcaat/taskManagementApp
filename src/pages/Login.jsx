@@ -59,16 +59,19 @@ function Login({ setIsAuthenticated }) {
 
         const data = await res.json();
 
-        if (res.ok) {
-          sessionStorage.setItem("isAuthenticated", "true");
-          sessionStorage.setItem("role", role); // Rolü de sakla
-          setIsAuthenticated(true);
+      if (res.ok) {
+  sessionStorage.setItem("isAuthenticated", "true");
+  sessionStorage.setItem("role", role);
+  localStorage.setItem("userRole", role); // 👈 BU satır eklendi
+  setIsAuthenticated(true);
 
-          if (role === "admin") {
-            navigate("/", { replace: true });
-          } else {
-            navigate("/personel-paneli", { replace: true });
-          }
+  if (role === "admin") {
+    navigate("/", { replace: true });
+  } else {
+    navigate("/personel-paneli", { replace: true });
+  }
+
+
         } else {
           setError(data.message || "Giriş başarısız.");
         }
